@@ -69,14 +69,6 @@ public:
         return *this;
     }
 
-    // T Norm() const override {
-    //     T sum = T(0);
-    //     for ( size_t i = 0; i < rows_ * cols_; ++i )
-    //         sum += data_[i] * data_[i];
-    //     // Для целых типов сначала проеобразуем в double для вычисления sqrt, затем обратно в T
-    //     return static_cast<T>( std::sqrt( static_cast<double>( sum ) ) );
-    // }
-
     T Norm() const override {
         double sum = 0.0;
         for ( size_t i = 0; i < rows_ * cols_; ++i ) {
@@ -94,6 +86,34 @@ public:
         for ( size_t i = 0; i < rows_ * cols_; ++i )
             data_[i] = value;
     }
+
+    // ----- Элементарные преобразования строк (как следствие и столбцов) -----
+    void MultiplyRow( size_t row, const T& scalar ) {
+        if ( row >= rows_ ) throw std::out_of_range( "MultiplyRow: row index out of range" );
+        if ( scalar == T(0) ) throw std::out_of_range( "MultiplyRow: can't multiply by zero" );
+        for ( size_t j = 0; j < cols_; ++j ) {
+            this->Set( row, j, this->Get( row, j ) * scalar );
+        }
+    }
+
+    void SwapRows( size_t row1, size_t row2 ) {
+        if ( row1 >= rows_ || row2 >= rows_ ) throw std::out_of_range( "SwapRows: index out of range" );
+        if ( row1 == row2 ) return;
+        for ( size_t j = 0; j < cols_; ++j ) {
+            T temp = this->Get( row1, j );
+            this->Set( row1, j, this->Get( row2, j ) );
+            this->Set( row2, j, temp );
+        }
+    }
+
+    void AddRowMultiplied( size_t target_row, size_t source_row, const T& scalar ) {
+        if ( target_row >= rows_ || source_row >= rows_ )
+            throw std::out_of_range( "AddRowMultiplied: row index out of range" );
+        for ( size_t j = 0; j < cols_; ++j ) {
+            this->Set( target_row, j, this->Get( target_row, j ) + this->Get( source_row, j ) * scalar );
+        }
+    }
+
 };
 
 // Свободный operator+ (создаёт новую матрицу)

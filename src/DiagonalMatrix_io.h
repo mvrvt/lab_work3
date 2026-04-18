@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "DiagonalMatrix.h"
-#include "DiagonalMatrix_io.h"
 
 template <typename T>
 void DiagonalMatrix<T>::Print() const {
@@ -14,4 +13,3 @@ void DiagonalMatrix<T>::Print() const {
         std::cout << "]\n";
     }
 }
-

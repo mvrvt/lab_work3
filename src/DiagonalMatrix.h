@@ -65,14 +65,6 @@ public:
         return *this;
     }
 
-    // T Norm() const override {
-    //     T sum = T(0);
-    //     for ( size_t i = 0; i < size_; ++i ) {
-    //         sum += data_[i] * data_[i];
-    //     }
-    //     return static_cast<T>( std::sqrt( static_cast<double>( sum ) ) );
-    // }
-
     T Norm() const override {
         double sum = 0.0;
         for ( size_t i = 0; i < size_; ++i ) {

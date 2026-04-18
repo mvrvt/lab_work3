@@ -1,5 +1,3 @@
-# pragma once
-
 #pragma once
 
 #include <iostream>
@@ -16,5 +14,3 @@ void SparseMatrix<T>::Print() const {
         std::cout << "]\n";
     }
 }
-
-

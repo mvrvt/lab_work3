@@ -20,17 +20,6 @@ private:
 public:
     TriangularMatrix( size_t size, TriangularType type = TriangularType::Upper ) : Matrix<T>( size, size ), type_( type ) { }
 
-    // TriangularMatrix( size_t size, TriangularType type, const T* values, size_t count ) : Matrix<T>( size, size ), type_( type ) {
-    //     size_t expected = size * ( size + 1 ) / 2;
-    //     if ( count != expected )
-    //         throw std::invalid_argument( "TriangularMatrix: data count mismatch" );
-    //     size_t idx = 0;
-    //     if ( type == TriangularType::Upper ) {
-    //         for ( size_t i = 0; i < size; ++i )
-    //             for ( size_t j = 0; j < size; ++j )
-    //                 this->Set( i, j, values[idx++] );
-    //     }
-    // }
     TriangularMatrix( size_t size, TriangularType type, const T* values, size_t count )
         : Matrix<T>( size, size ), type_( type ) {
 

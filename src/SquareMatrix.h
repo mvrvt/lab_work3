@@ -122,12 +122,6 @@ public:
         SquareMatrix<T> result = *this;
         SquareMatrix<T> base = *this;
         int exp = exponent - 1;
-        // while ( exp > 0 ) {
-        //     if ( exp & 1 )
-        //         result = result * base;
-        //     base = base * base;
-        //     exp >>= 1;
-        // }
         while ( exp > 0 ) {
             if ( exp & 1 )
                 result = SquareMatrix<T>( result * base );
