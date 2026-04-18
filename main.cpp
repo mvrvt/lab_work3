@@ -1,5 +1,5 @@
-#include "src/Matrix.h"
-#include "src/Matrix_io.h"
+#include "src/Matrix.hpp"
+#include "src/Matrix_io.hpp"
 
 int main() {
     Matrix<int> m(2, 2);

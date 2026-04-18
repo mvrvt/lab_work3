@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Matrix.h"
-#include "TriangularMatrix.h"
+#include "Matrix.hpp"
+#include "TriangularMatrix.hpp"
 #include <stdexcept>
 #include <cmath>
 

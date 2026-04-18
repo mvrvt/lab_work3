@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IMatrix.h"
+#include "IMatrix.hpp"
 #include "lab2_files/DynamicArray.h"
 #include <stdexcept>
 #include <cstddef>

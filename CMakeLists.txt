@@ -11,15 +11,15 @@ add_executable(lab_work3 main.cpp
         src/lab2_files/IEnumerator.h
         src/lab2_files/Sequence.h
         src/lab2_files/SequenceIterator.h
-        src/IMatrix.h
-        src/Matrix.h
-        src/Matrix_io.h
-        src/SquareMatrix.h
+        src/IMatrix.hpp
+        src/Matrix.hpp
+        src/Matrix_io.hpp
+        src/SquareMatrix.hpp
         tests/SquareMatrix_tests.cpp
-        src/TriangularMatrix.h
-        src/DiagonalMatrix.h
-        src/DiagonalMatrix_io.h
-        src/SparseMatrix.h
-        src/SparseMatrix_io.h
-        src/Complex.h
-        src/Complex_io.h)
+        src/TriangularMatrix.hpp
+        src/DiagonalMatrix.hpp
+        src/DiagonalMatrix_io.hpp
+        src/SparseMatrix.hpp
+        src/SparseMatrix_io.hpp
+        src/Complex.hpp
+        src/Complex_io.hpp)

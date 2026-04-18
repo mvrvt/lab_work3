@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "DiagonalMatrix.h"
+#include "DiagonalMatrix.hpp"
 
 template <typename T>
 void DiagonalMatrix<T>::Print() const {

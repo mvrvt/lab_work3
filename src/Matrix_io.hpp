@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include "Matrix.h"
-#include "Complex_io.h"
+#include "Matrix.hpp"
+#include "Complex_io.hpp"
 
 // Определение метода Print для класса Matrix<T>
 template <typename T>
