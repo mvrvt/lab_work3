@@ -22,4 +22,5 @@ add_executable(lab_work3 main.cpp
         src/SparseMatrix.hpp
         src/SparseMatrix_io.hpp
         src/Complex.hpp
-        src/Complex_io.hpp)
+        src/Complex_io.hpp
+        src/vector.hpp)
