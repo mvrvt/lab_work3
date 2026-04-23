@@ -9,6 +9,8 @@ template <typename T>
 class Vector {
 public:
     // Конструкторы
+    Vector() : data_( 0 ), size_( 0 ) { }
+
     explicit Vector( size_t size ) : data_( size ), size_( size ) {
         for ( size_t i = 0; i < size_; ++i )
             data_[i] = T( 0 );

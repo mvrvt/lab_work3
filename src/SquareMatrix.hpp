@@ -9,7 +9,7 @@ template <typename T>
 class SquareMatrix : public Matrix<T> {
 public:
     // Конструкторы
-    SquareMatrix( size_t size ) : Matrix<T>( size ) { }
+    SquareMatrix( size_t size ) : Matrix<T>( size, size ) { }
 
     SquareMatrix( size_t size, const T* values, size_t count ) : Matrix<T>( size, size, values, count ) {
         if ( count != size * size )
