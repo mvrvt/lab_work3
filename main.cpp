@@ -1,11 +1,12 @@
+#include "src/Matrix_io.hpp"
+#include "src/Complex_io.hpp"
+#include "src/SLAE.hpp"
+#include "src/Generators.hpp"
+#include "src/lab2_files/ArraySequence.h"
 #include <iostream>
 #include <iomanip>
 #include <chrono>
 #include <limits>
-#include "src/Matrix_io.hpp"
-#include "src/SLAE.hpp"
-#include "src/Generators.hpp"
-#include "src/lab2_files/ArraySequence.h"
 
 using namespace std::chrono;
 

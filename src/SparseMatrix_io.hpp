@@ -1,8 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include "SparseMatrix.hpp"
 #include "Complex_io.hpp"
+#include <iostream>
 
 template <typename T>
 void SparseMatrix<T>::Print() const {

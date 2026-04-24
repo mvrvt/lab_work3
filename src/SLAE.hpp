@@ -2,7 +2,7 @@
 
 #include "SquareMatrix.hpp"
 #include "TriangularMatrix.hpp"
-#include "vector.hpp"
+#include "Vector.hpp"
 #include <cmath>
 #include <stdexcept>
 #include <utility>

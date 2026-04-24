@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "IMatrix.hpp"
 #include "lab2_files/DynamicArray.h"
 #include <stdexcept>
@@ -12,11 +11,13 @@ enum class TriangularType { Upper, Lower };
 template <typename T>
 class TriangularMatrix : public IMatrix<T> {
 public:
-    TriangularMatrix( size_t size, TriangularType type = TriangularType::Upper )
-    : data_( size * ( size + 1) / 2 ), size_( size ), type_( type ), zero_( T( 0 ) ) {
+    explicit TriangularMatrix( size_t size, TriangularType type = TriangularType::Upper )
+    : data_( size * ( size + 1) / 2 ), size_( size ), type_( type ) {
         for ( size_t k = 0; k < data_.GetCount(); ++k )
-            data_[k] = zero_;
+            data_[k] = zero_val;
     }
+
+    ~TriangularMatrix() override = default;
 
     size_t GetRows() const override { return size_; }
     size_t GetCols() const override { return size_; }
@@ -28,7 +29,7 @@ public:
         if ( IsInTriangle( i, j ) ) {
             return data_.Get( GetIndex( i, j ) );
         }
-        return zero_;
+        return zero_val;
     }
 
     void Set( size_t i, size_t j, const T& value ) override {
@@ -37,24 +38,56 @@ public:
 
         if ( IsInTriangle( i, j ) ) {
             data_[GetIndex( i, j )] = value;
-        } else if ( value != T( 0 ) ) {
+        } else if ( value != zero_val ) {
             throw std::invalid_argument( "TriangularMatrix::Set: can't set non-zero value outside the triangle" );
         }
     }
 
     IMatrix<T>& operator+=( const IMatrix<T>& other ) override {
         if ( size_ != other.GetRows() || size_ != other.GetCols() )
-            throw std::invalid_argument("TriangularMatrix::+=: size mismatch");
+            throw std::invalid_argument( "TriangularMatrix::+=: size mismatch" );
 
-        for ( size_t i = 0; i < size_; ++i ) {
-            for ( size_t j = 0; j < size_; ++j ) {
-                if ( IsInTriangle( i, j ) ) {
-                    this->Set( i, j, this->Get( i, j ) + other.Get( i, j ) );
+        // Если other - треугольная матрица того же типа
+        const auto* tri_other = dynamic_cast<const TriangularMatrix<T>*>( &other );
+        if ( tri_other && tri_other->type_ == this->type_ ) {
+            for ( size_t k = 0; k < data_.GetCount(); ++k ) {
+                data_[k] += tri_other->data_.Get( k );
+            }
+        } else {
+            // Если other - другая матрица, сначала проверяем её на безопасность
+            for ( size_t i = 0; i < size_; ++i ) {
+                for ( size_t j = 0; j < size_; ++j ) {
+                    if ( !IsInTriangle( i, j ) && other.Get( i, j ) != zero_val )
+                        throw std::invalid_argument( "TriangularMatrix::+=: can't add a matrix with non-zero elements outside the triangle" );
+                }
+            }
+
+            // Если проверка пройдена, безопасно модифицируем данные
+            for ( size_t i = 0; i < size_; ++i ) {
+                for ( size_t j = 0; j < size_; ++j ) {
+                    if ( IsInTriangle( i, j ) ) {
+                        data_[GetIndex( i, j)] += other.Get( i, j );
+                    }
                 }
             }
         }
         return *this;
     }
+
+
+    // IMatrix<T>& operator+=( const IMatrix<T>& other ) override {
+    //     if ( size_ != other.GetRows() || size_ != other.GetCols() )
+    //         throw std::invalid_argument("TriangularMatrix::+=: size mismatch");
+    //
+    //     for ( size_t i = 0; i < size_; ++i ) {
+    //         for ( size_t j = 0; j < size_; ++j ) {
+    //             if ( IsInTriangle( i, j ) ) {
+    //                 this->Set( i, j, this->Get( i, j ) + other.Get( i, j ) );
+    //             }
+    //         }
+    //     }
+    //     return *this;
+    // }
 
     IMatrix<T>& operator*=(const T& scalar) override {
         for (size_t k = 0; k < data_.GetCount(); ++k) {
@@ -82,13 +115,12 @@ public:
 
     void Print() const override;
 
-    ~TriangularMatrix() override = default;
-
 private:
     DynamicArray<T> data_;
     size_t          size_;
     TriangularType  type_;
-    T               zero_;
+
+    inline static const T zero_val { };
 
     // Вспомогательный метод для вычисления индекса в массиве
     size_t GetIndex( size_t i, size_t j ) const {

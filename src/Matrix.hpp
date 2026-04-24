@@ -8,15 +8,6 @@
 
 template <typename T>
 class Matrix : public IMatrix<T> {
-protected:
-    DynamicArray<T> data_;
-    size_t rows_;
-    size_t cols_;
-
-    size_t Index( size_t i, size_t j ) const {
-        return i * cols_ + j;
-    }
-
 public:
     // Конструкторы
     Matrix( size_t rows, size_t cols ) : data_( rows * cols ), rows_( rows ), cols_( cols ) {
@@ -32,9 +23,9 @@ public:
 
     // Копирование и перемещение (по умолчанию, поскольку DynamicArray поддерживает)
     Matrix( const Matrix& ) = default;
-    Matrix( Matrix&& ) = default;
+    Matrix( Matrix&& )      = default;
     Matrix& operator=( const Matrix& ) = default;
-    Matrix& operator=( Matrix&& ) = default;
+    Matrix& operator=( Matrix&& )      = default;
 
     virtual ~Matrix() = default;
 
@@ -112,6 +103,15 @@ public:
         for ( size_t j = 0; j < cols_; ++j ) {
             this->Set( target_row, j, this->Get( target_row, j ) + this->Get( source_row, j ) * scalar );
         }
+    }
+
+protected:
+    DynamicArray<T> data_;
+    size_t          rows_;
+    size_t          cols_;
+
+    size_t Index( size_t i, size_t j ) const {
+        return i * cols_ + j;
     }
 
 };

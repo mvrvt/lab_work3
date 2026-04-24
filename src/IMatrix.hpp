@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>   // для size_t
-#include <stdexcept> // для вывода ошибок
 
 template <typename T>
 class IMatrix {

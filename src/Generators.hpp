@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SquareMatrix.hpp"
-#include "vector.hpp"
+#include "Vector.hpp"
 #include <random>
 #include <cmath>
 

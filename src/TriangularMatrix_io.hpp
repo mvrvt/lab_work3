@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include "TriangularMatrix.hpp"
+#include <iostream>
 
 template <typename T>
 void TriangularMatrix<T>::Print() const {
