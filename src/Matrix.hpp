@@ -10,7 +10,7 @@ template <typename T>
 class Matrix : public IMatrix<T> {
 public:
     // Конструкторы
-    Matrix( size_t rows, size_t cols ) : data_( rows * cols ), rows_( rows ), cols_( cols ) {
+    Matrix( size_t rows, size_t cols ) : data_( static_cast<int>( rows * cols ) ), rows_( rows ), cols_( cols ) {
         this->Fill( T( 0 ) );
     }
 
@@ -22,10 +22,10 @@ public:
     }
 
     // Копирование и перемещение (по умолчанию, поскольку DynamicArray поддерживает)
-    Matrix( const Matrix& ) = default;
-    Matrix( Matrix&& )      = default;
-    Matrix& operator=( const Matrix& ) = default;
-    Matrix& operator=( Matrix&& )      = default;
+    Matrix( const Matrix& )            = default; // copy constructor
+    Matrix( Matrix&& )                 = default; // move constructor
+    Matrix& operator=( const Matrix& ) = default; // copy assignment
+    Matrix& operator=( Matrix&& )      = default; // move assignment
 
     virtual ~Matrix() = default;
 
@@ -46,13 +46,34 @@ public:
     }
 
     Matrix<T>& operator+=( const IMatrix<T>& other ) override {
-        if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
+        if ( rows_ != other.GetRows() || cols_ != GetCols() )
             throw std::invalid_argument( "Matrix::+=: size mismatch" );
-        for ( size_t i = 0; i < rows_; ++i )
-            for ( size_t j = 0; j < cols_; ++j )
-               data_[Index( i, j )] += other.Get( i, j );
+
+        // Если other не является базовой матрицей (или её прямым наследником)
+        const Matrix<T>* mat_other = dynamic_cast<const Matrix<T>*>( &other );
+        if ( mat_other ) {
+            for ( size_t i = 0; i < data_.GetCount(); ++i ) {
+                data_[i] += mat_other->data_.Get( i );
+            }
+        } else {
+            // Если это какая-то другая матрица, то придётся вызвать её через метод Get( i , j )
+            for ( size_t i = 0; i < rows_; ++i ) {
+                for ( size_t j = 0; j < cols_; ++j ) {
+                    data_[Index( i, j )] += other.Get( i, j );
+                }
+            }
+        }
         return *this;
     }
+
+    // Matrix<T>& operator+=( const IMatrix<T>& other ) override {
+    //     if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
+    //         throw std::invalid_argument( "Matrix::+=: size mismatch" );
+    //     for ( size_t i = 0; i < rows_; ++i )
+    //         for ( size_t j = 0; j < cols_; ++j )
+    //            data_[Index( i, j )] += other.Get( i, j );
+    //     return *this;
+    // }
 
     Matrix<T>& operator*=( const T& scalar ) override {
         for ( size_t idx = 0; idx < rows_ * cols_; ++idx )
@@ -121,6 +142,7 @@ template <typename T>
 Matrix<T> operator+( const IMatrix<T>& a, const IMatrix<T>& b ) {
 	if ( a.GetRows() != b.GetRows() || a.GetCols() != b.GetCols() )
 		throw std::invalid_argument( "Matrix size mismatch" );
+
     Matrix<T> result( a.GetRows(), a.GetCols() );
     for ( size_t i = 0; i < a.GetRows(); ++i )
         for ( size_t j = 0; j < a.GetCols(); ++j )
@@ -133,6 +155,7 @@ template <typename T>
 Matrix<T> operator*( const IMatrix<T>& a, const IMatrix<T>& b ) {
     if ( a.GetCols() != b.GetRows() )
         throw std::invalid_argument( "Matrix multiplication: incompatible dimentions" );
+
     Matrix<T> result( a.GetRows(), b.GetCols() );
     for ( size_t i = 0; i < result.GetRows(); ++i ) {
         for ( size_t j = 0; j < result.GetCols(); ++j ) {

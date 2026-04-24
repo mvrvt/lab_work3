@@ -22,11 +22,11 @@ public:
     }
 
     // Копирование и перемещение
-    Vector( const Vector& ) = default;
-    Vector( Vector&& ) = default;
-    Vector& operator=( const Vector& ) = default;
-    Vector& operator=( Vector&& ) = default;
-    ~Vector() = default;
+    Vector( const Vector& )            = default; // copy constructor
+    Vector( Vector&& )                 = default; // move constructor
+    Vector& operator=( const Vector& ) = default; // copy assignment
+    Vector& operator=( Vector&& )      = default; // move assignment
+    ~Vector()                          = default;
 
     size_t GetSize() const { return size_; }
 
