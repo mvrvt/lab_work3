@@ -14,9 +14,9 @@ private:
     T zero_;               // Заглушка для возврата по ссылке нулевых элементов
 
 public:
-    DiagonalMatrix( size_t size ) : data_( size ), size_( size ), zero_( T(0) ) {
+    DiagonalMatrix( size_t size ) : data_( size ), size_( size ), zero_( T( 0 ) ) {
         for ( size_t i = 0; i < size_; ++i )
-            data_[i] = T(0);
+            data_[i] = T( 0 );
     }
 
     DiagonalMatrix( size_t size, const T* diag_values ) : data_( size ), size_( size ), zero_( T(0) ) {

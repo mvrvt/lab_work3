@@ -25,4 +25,5 @@ add_executable(lab_work3 main.cpp
         src/Complex_io.hpp
         src/vector.hpp
         src/SLAE.hpp
-        src/Generators.hpp)
+        src/Generators.hpp
+        src/TriangularMatrix_io.hpp)

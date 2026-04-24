@@ -11,8 +11,8 @@ public:
     virtual size_t GetCols() const = 0;
 
     // Доступ к элементам
-    virtual const T&   Get( size_t i, size_t j )           const = 0;
-    virtual void       Set( size_t i, size_t j, const T& value ) = 0;
+    virtual const T& Get( size_t i, size_t j )           const = 0;
+    virtual void     Set( size_t i, size_t j, const T& value ) = 0;
 
     // Операторы, которые изменяют текущий объект
     virtual IMatrix<T>& operator+=( const IMatrix<T>& other ) = 0;

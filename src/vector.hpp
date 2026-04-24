@@ -89,7 +89,7 @@ public:
 
 private:
     DynamicArray<T> data_;
-    size_t size_;
+    size_t          size_;
 };
 
 // Свободные операторы:
