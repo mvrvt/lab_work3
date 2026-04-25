@@ -66,15 +66,6 @@ public:
         return *this;
     }
 
-    // Matrix<T>& operator+=( const IMatrix<T>& other ) override {
-    //     if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
-    //         throw std::invalid_argument( "Matrix::+=: size mismatch" );
-    //     for ( size_t i = 0; i < rows_; ++i )
-    //         for ( size_t j = 0; j < cols_; ++j )
-    //            data_[Index( i, j )] += other.Get( i, j );
-    //     return *this;
-    // }
-
     Matrix<T>& operator*=( const T& scalar ) override {
         for ( size_t idx = 0; idx < rows_ * cols_; ++idx )
             data_[idx] *= scalar;

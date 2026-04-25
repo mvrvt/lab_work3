@@ -65,18 +65,6 @@ public:
         return *this;
     }
 
-    // IMatrix<T>& operator+=( const IMatrix<T>& other ) override {
-    //     if ( size_ != other.GetRows() || size_ != other.GetCols() )
-    //         throw std::invalid_argument( "DiagonalMatrix::+=: size mismatch" );
-    //
-    //     // Для диагональной матрицы мы можем прибавлять только элементы на диагонали
-    //     for ( size_t i = 0; i < size_; ++i ) {
-    //         data_[i] += other.Get( i, i );
-    //     }
-    //
-    //     return *this;
-    // }
-
     IMatrix<T>& operator*=( const T& scalar ) override {
         for ( size_t i = 0; i < size_; ++i )
             data_[i] *= scalar;
