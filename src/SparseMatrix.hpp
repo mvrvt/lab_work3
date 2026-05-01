@@ -91,6 +91,27 @@ public:
         return *this;
     }
 
+    IMatrix<T>& operator-=( const IMatrix<T>& other ) override {
+        if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
+            throw std::invalid_argument( "SparseMatrix::-=: size mismatch" );
+        // Аналогично operator+=, но со знаком минус
+        const SparseMatrix<T>* sparse_other = dynamic_cast<const SparseMatrix<T>*>( &other );
+        if ( sparse_other ) {
+            for ( size_t k = 0; k < sparse_other->count_; ++k ) {
+                const auto& el = sparse_other->elements_[k];
+                Set( el.row, el.col, Get( el.row, el.col ) - el.value );
+            }
+        } else {
+            for ( size_t i = 0; i < rows_; ++i )
+                for ( size_t j = 0; j < cols_; ++j ) {
+                    T val = other.Get( i, j );
+                    if ( val != zero_val )
+                        Set( i, j, Get( i, j ) - val );
+                }
+        }
+        return *this;
+    }
+
     IMatrix<T>& operator*=( const T& scalar ) override {
         if ( scalar == zero_val ) {
             count_ = 0;
@@ -99,6 +120,14 @@ public:
         for ( size_t k = 0; k < count_; ++k ) {
             elements_[k].value *= scalar;
         }
+        return *this;
+    }
+
+    IMatrix<T>& operator/=( const T& scalar ) override {
+        if ( scalar == zero_val )
+            throw std::domain_error( "SparseMatrix::/=: division by zero" );
+        for ( size_t k = 0; k < count_; ++k )
+            elements_[k].value /= scalar;
         return *this;
     }
 
@@ -111,8 +140,6 @@ public:
         }
         return static_cast<T>( std::sqrt( sum ) );
     }
-
-    void Print() const override;
 
 private:
     struct Element {

@@ -15,7 +15,9 @@ public:
 
     // Операторы, которые изменяют текущий объект
     virtual IMatrix<T>& operator+=( const IMatrix<T>& other ) = 0;
+    virtual IMatrix<T>& operator-=( const IMatrix<T>& other ) = 0;
     virtual IMatrix<T>& operator*=( const T& scalar )         = 0;
+    virtual IMatrix<T>& operator/=( const T& scalar )         = 0;
 
     // Норма Фробениуса
     virtual T Norm() const = 0;

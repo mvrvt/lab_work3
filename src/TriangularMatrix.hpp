@@ -74,10 +74,28 @@ public:
         return *this;
     }
 
+    IMatrix<T>& operator-=( const IMatrix<T>& other ) override {
+        if ( size_ != other.GetRows() || size_ != other.GetCols() )
+            throw std::invalid_argument( "TriangularMatrix::-=: size mismatch" );
+
+        for ( size_t i = 0; i < size_; ++i )
+            for ( size_t j = 0; j < size_; ++j )
+                Set( i, j, Get( i, j ) - other.Get( i, j ) );
+        return *this;
+    }
+
     IMatrix<T>& operator*=(const T& scalar) override {
         for (size_t k = 0; k < data_.GetCount(); ++k) {
             data_[k] *= scalar;
         }
+        return *this;
+    }
+
+    IMatrix<T>& operator/=( const T& scalar ) override {
+        if ( scalar == zero_val )
+            throw std::domain_error( "TriangularMatrix::/=: division by zero" );
+        for ( size_t k = 0; k < data_.GetCount(); ++k )
+            data_[k] /= scalar;
         return *this;
     }
 
@@ -97,8 +115,6 @@ public:
             det = det * Get( i, i );
         return det;
     }
-
-    void Print() const override;
 
 private:
     DynamicArray<T> data_;

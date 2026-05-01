@@ -62,7 +62,7 @@ struct Complex {
                    abs( im - o.im ) <= std::numeric_limits<T>::epsilon();
         } else {
             // Если Т - целочисленный тип, сравниваем напрямую
-            return re = o.re && im == o.im;
+            return re == o.re && im == o.im;
         }
     }
 

@@ -66,9 +66,28 @@ public:
         return *this;
     }
 
+    Matrix<T>& operator-=( const IMatrix<T>& other ) override {
+        if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
+            throw std::invalid_argument( "Matrix::-=: size mismatch" );
+
+        for ( size_t i = 0; i < rows_; ++i )
+            for ( size_t j = 0; j < cols_; ++j )
+                Set( i, j, Get( i, j ) - other.Get( i, j ) );
+        return *this;
+    }
+
     Matrix<T>& operator*=( const T& scalar ) override {
         for ( size_t idx = 0; idx < rows_ * cols_; ++idx )
             data_[idx] *= scalar;
+        return *this;
+    }
+
+    Matrix<T>& operator /=( const T& scalar ) override {
+        if ( scalar == T(0) )
+            throw std::domain_error( "Matrix::/=: division by zero" );
+
+        for ( size_t idx = 0; idx < rows_ * cols_; ++idx )
+            data_[idx] /= scalar;
         return *this;
     }
 
@@ -81,8 +100,6 @@ public:
         }
         return static_cast<T>( std::sqrt( sum ) );
     }
-
-    void Print() const override;
 
     // Доп. метод (не входит в интерфейс)
     void Fill( const T& value ) {
@@ -127,34 +144,3 @@ protected:
     }
 
 };
-
-// Свободный operator+ (создаёт новую матрицу)
-template <typename T>
-Matrix<T> operator+( const IMatrix<T>& a, const IMatrix<T>& b ) {
-	if ( a.GetRows() != b.GetRows() || a.GetCols() != b.GetCols() )
-		throw std::invalid_argument( "Matrix size mismatch" );
-
-    Matrix<T> result( a.GetRows(), a.GetCols() );
-    for ( size_t i = 0; i < a.GetRows(); ++i )
-        for ( size_t j = 0; j < a.GetCols(); ++j )
-            result.Set( i, j, a.Get( i, j ) + b.Get( i, j ) );
-    return result;
-}
-
-// Свободный operator* для умножения матриц (требует, чтобы a.cols == b.rows)
-template <typename T>
-Matrix<T> operator*( const IMatrix<T>& a, const IMatrix<T>& b ) {
-    if ( a.GetCols() != b.GetRows() )
-        throw std::invalid_argument( "Matrix multiplication: incompatible dimentions" );
-
-    Matrix<T> result( a.GetRows(), b.GetCols() );
-    for ( size_t i = 0; i < result.GetRows(); ++i ) {
-        for ( size_t j = 0; j < result.GetCols(); ++j ) {
-            T sum = T(0);
-            for ( size_t k = 0; k < a.GetCols(); ++k )
-                sum = sum + a.Get( i, k ) * b.Get( k, j );
-            result.Set( i, j, sum );
-        }
-    }
-    return result;
-}

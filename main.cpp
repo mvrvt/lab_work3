@@ -1,4 +1,6 @@
 #include "src/Matrices_io.hpp"
+#include "src/Matrix_operators.hpp"
+#include "src/Complex_io.hpp"
 #include "src/SLAE.hpp"
 #include "src/Generators.hpp"
 #include "src/lab2_files/ArraySequence.h"
@@ -24,14 +26,14 @@ void TestHilbertAccuracy() {
     for (size_t n : sizes) {
         auto H = LinAlg::GenerateHilbertMatrix<double>(n);
         Vector<double> x_exact(n);
-        for (size_t i = 0; i < n; ++i) x_exact[i] = 1.0;
+        for (size_t i = 0; i < n; ++i) x_exact[i] = 1.0;   // заполняем единицами
         Vector<double> b = H * x_exact;
 
         std::cout << "Размер n = " << n << "\n";
 
         // 1. Гаусс с выбором
         try {
-            Vector<double> x_g_pivot = LinAlg::SolveGauss(H, b, true);
+            Vector<double> x_g_pivot = LinAlg::SolveGauss(H, b, true);  // true - использовать pivot
             double err_g_pivot = (x_g_pivot - x_exact).Norm() / x_exact.Norm();
             std::cout << "  Гаусс (с выбором):   Погрешность = " << std::scientific << err_g_pivot << "\n";
         } catch(...) { std::cout << "  Гаусс (с выбором):   Ошибка вычисления\n"; }

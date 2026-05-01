@@ -65,9 +65,26 @@ public:
         return *this;
     }
 
+    IMatrix<T>& operator-=( const IMatrix<T>& other ) override {
+        if ( size_ != other.GetRows() || size_ != other.GetCols() )
+            throw std::invalid_argument( "DiagonalMatrix::-=: size mismatch" );
+
+        for ( size_t i = 0; i < size_; ++i )
+            data_[i] -= other.Get( i, i );
+        return *this;
+    }
+
     IMatrix<T>& operator*=( const T& scalar ) override {
         for ( size_t i = 0; i < size_; ++i )
             data_[i] *= scalar;
+        return *this;
+    }
+
+    IMatrix<T>& operator/=( const T& scalar ) override {
+        if ( scalar == zero_val )
+            throw std::domain_error( "DiagonalMatrix::/=: division by zero" );
+        for ( size_t i = 0; i < size_; ++i )
+            data_[i] /= scalar;
         return *this;
     }
 
@@ -80,8 +97,6 @@ public:
         }
         return static_cast<T>( std::sqrt( sum ) );
     }
-
-    void Print() const override;
 
 private:
     DynamicArray<T> data_; // Храним только диагональ
