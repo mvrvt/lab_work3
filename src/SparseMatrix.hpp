@@ -3,6 +3,7 @@
 #include "IMatrix.hpp"
 #include "lab2_files/DynamicArray.h"
 #include <stdexcept>
+#include <algorithm>
 #include <cmath>
 
 template <typename T>
@@ -50,7 +51,8 @@ public:
             if ( value != zero_val ) {
                 // Вставка: result.index указывает на место, куда нужно вставить эл-нт
                 if ( count_ == capacity_ ) {
-                    capacity_ = ( capacity_ == 0 ) ? 2 : capacity_ * 2;
+                    size_t new_capacity = ( capacity_ == 0 ) ? 2 : capacity_ * 2;
+                    capacity_ = std::min( new_capacity, rows_ * cols_ );
                     elements_.Resize( static_cast<int>( capacity_ ) );
                 }
 

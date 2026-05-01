@@ -1,41 +1,106 @@
 #pragma once
 
-#include <cmath>
-#include <stdexcept>
+#include <cmath>        // std::sqrt
+#include <stdexcept>    // ошибки
+#include <limits>       // std::numeric_limits (машинный эпсилон)
+#include <type_traits>  // Для std::is_floating_point_v
 
 template <typename T>
+
 struct Complex {
     T re;
     T im;
 
     // Converting constructor
-    // Позволяет делать так: Complex<double> c = 5.0; (im будет 0)
-    Complex( T r = T( 0 ), T i = T( 0 ) ) : re( r ), im( i ) { }
+    Complex ( T r = zero_val, T i = zero_val ) : re( r ), im( i ) { }
 
-    // Арифметика
-    Complex operator+( const Complex& o ) const { return Complex( re + o.re, im + o.im ); }
-    Complex operator-( const Complex& o ) const { return Complex( re - o.re, im - o.im ); }
-    Complex operator-()                   const { return Complex( -re, -im); } // унарный минус
-    Complex operator*( const Complex& o ) const { return Complex( re * o.re - im * o.im , re * o.im + im * o.re ); }
-    Complex operator/( const Complex& o ) const {
-        T denominator = o.re * o.re + o.im * o.im;
-        if ( denominator == T( 0 ) )
-            throw std::domain_error( "Complex: division by zero" );
-        return Complex( ( re * o.re + im * o.im ) / denominator,
-                        ( im * o.re - re * o.im ) / denominator );
+    // Операторы модификации (изменяют текущий объект)
+
+    Complex& operator+=( const Complex& o ) {
+        re += o.re;
+        im += o.im;
+        return *this;
     }
 
-    bool operator==( const Complex& o ) const { return re == o.re && im == o.im; }
-    bool operator!=( const Complex& o ) const { return !( *this == o ); }
+    Complex operator-=( const Complex& o ) {
+        re -= o.re;
+        im -= o.im;
+        return *this;
+    }
 
-    // Операторы присваивания с вычислением (нужно для += в матрицах)
-    Complex& operator+=( const Complex& o ) { *this = *this + o; return *this; }
-    Complex& operator*=( const Complex& o ) { *this = *this * o; return *this; }
+    Complex& operator*=( const Complex& o ) {
+        T new_re = re * o.re - im * o.im;
+        T new_im = re * o.im + im * o.re;
+        re = new_re;
+        im = new_im;
+        return *this;
+    }
+
+    Complex& operator/=( const Complex& o ) {
+        T denominator = o.re * o.re + o.im * o.im;
+        if ( denominator == zero_val )
+            throw std::domain_error( "Complex: division by zero" );
+
+        T new_re = ( re * o.re + im * o.im ) / denominator;
+        T new_im = ( im * o.re - re * o.im ) / denominator;
+        re = new_re;
+        im = new_im;
+        return *this;
+    }
+
+    Complex operator-( ) const {
+        return Complex( -re, -im );
+    }
+
+    // Операторы сравнения (с учётом машинного эпсилон)
+
+    bool operator==( const Complex& o ) const {
+        if constexpr ( std::is_floating_point_v<T> ) {
+            // Если Е - тип с плавающей точкой, то сравниваем через эпсилон
+            using std::abs;
+            return abs( re - o.re ) <= std::numeric_limits<T>::epsilon() &&
+                   abs( im - o.im ) <= std::numeric_limits<T>::epsilon();
+        } else {
+            // Если Т - целочисленный тип, сравниваем напрямую
+            return re = o.re && im == o.im;
+        }
+    }
+
+    bool operator!=( const Complex& o ) const {
+        return !( *this == o );
+    }
+
+    inline static const T zero_val { };
 };
 
-// Глобальная функция abs
-// Когда мы вызываем abs(val), компилятор ищет функцию abs рядом с типом val
+
+// Свободные бинарные операторы (создают новые объекты)
+template <typename T>
+Complex<T> operator+( Complex<T> a, const Complex<T>& b ) {
+    a += b;
+    return a;
+}
+
+template <typename T>
+Complex<T> operator-( Complex<T> a, const Complex<T>& b ) {
+    a -= b;
+    return a;
+}
+
+template <typename T>
+Complex<T> operator*( Complex<T> a, const Complex<T>& b ) {
+    a *= b;
+    return a;
+}
+
+template <typename T>
+Complex<T> operator/( Complex<T> a, const Complex<T>& b ) {
+    a /= b;
+    return a;
+}
+
 template <typename T>
 double abs( const Complex<T>& c ) {
     return std::sqrt( static_cast<double>( c.re * c.re + c.im * c.im ) );
 }
+

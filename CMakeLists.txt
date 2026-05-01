@@ -26,4 +26,5 @@ add_executable(lab_work3 main.cpp
         src/vector.hpp
         src/SLAE.hpp
         src/Generators.hpp
-        src/TriangularMatrix_io.hpp)
+        src/TriangularMatrix_io.hpp
+        src/Matrices_io.hpp)

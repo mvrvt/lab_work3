@@ -43,27 +43,4 @@ public:
                 result.Set( j, i, this->Get( i, j ) );
         return result;
     }
-
-    // Дополнение: возведение в степень (целая неотрицательная)
-    SquareMatrix<T> Power( int exponent ) const {
-        if ( exponent < 0 )
-            throw std::invalid_argument( "Power: exponent must be non-negative" );
-
-        if ( exponent == 0 ) {
-            SquareMatrix<T> sqr_matrix( this->rows_ );
-            for ( size_t i = 0; i < this->rows_; ++i )
-                sqr_matrix.Set( i, i, T(1) );
-            return sqr_matrix;
-        }
-        SquareMatrix<T> result = *this;
-        SquareMatrix<T> base = *this;
-        int exp = exponent - 1;
-        while ( exp > 0 ) {
-            if ( exp & 1 )
-                result = SquareMatrix<T>( result * base );
-            base = SquareMatrix<T>( base * base );
-            exp >>= 1;
-        }
-        return result;
-    }
 };

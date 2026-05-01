@@ -20,7 +20,7 @@ public:
     // Норма Фробениуса
     virtual T Norm() const = 0;
 
-    virtual void Print() const = 0;
+    // virtual void Print() const = 0;
 
     virtual ~IMatrix() = default;
 };

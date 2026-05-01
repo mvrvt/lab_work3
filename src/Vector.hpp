@@ -11,12 +11,12 @@ public:
     // Конструкторы
     Vector() : data_( 0 ), size_( 0 ) { }
 
-    explicit Vector( size_t size ) : data_( size ), size_( size ) {
+    explicit Vector( size_t size ) : data_( static_cast<int>( size ) ), size_( size ) {
         for ( size_t i = 0; i < size_; ++i )
             data_[i] = T( 0 );
     }
 
-    Vector( size_t size, const T* values ) : data_( size ), size_( size ) {
+    Vector( size_t size, const T* values ) : data_( static_cast<int>( size ) ), size_( size ) {
         for ( size_t i = 0; i < size_; ++i )
             data_[i] = values[i];
     }
@@ -118,7 +118,7 @@ Vector<T> operator*( const Vector<T>& vec, const T& scalar ) {
 template <typename T>
 Vector<T> operator*( const T& scalar, const Vector<T>& vec ) { return vec * scalar; }
 
-// Умножение матрицы на вектор (нужно для решения СЛАУ)
+// Умножение матрицы на вектор (нужно для решения СЛАУ) //TODO переделать этот оператор (определить его в IMatrix или в Matrix)
 template <typename T>
 Vector<T> operator*( const IMatrix<T>& mat, const Vector<T>& vec ) {
     if ( mat.GetCols() != vec.GetSize() )

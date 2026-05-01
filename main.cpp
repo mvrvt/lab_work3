@@ -1,5 +1,4 @@
-#include "src/Matrix_io.hpp"
-#include "src/Complex_io.hpp"
+#include "src/Matrices_io.hpp"
 #include "src/SLAE.hpp"
 #include "src/Generators.hpp"
 #include "src/lab2_files/ArraySequence.h"
@@ -149,19 +148,23 @@ void TestMultipleRHS() {
     auto A = LinAlg::GenerateRandomMatrix<double>(n, 123); // Фиксированный seed для красоты
 
     std::cout << "Исходная матрица A:\n";
-    A.Print();
+    std::cout << A;
+    // A.Print();
 
     auto [Q, R] = LinAlg::QRDecomposition(A);
 
     std::cout << "\nОртогональная матрица Q:\n";
-    Q.Print();
+    std::cout << Q;
+    // Q.Print();
 
     std::cout << "\nВерхнетреугольная матрица R:\n";
-    R.Print();
+    std::cout << R;
+    // R.Print();
 
     std::cout << "\nПроверка: Q * R (должно быть равно A):\n";
     auto QR = Q * R;
-    QR.Print();
+    std::cout << QR;
+    // QR.Print();
 }
 
 void ManualInputTest() {
