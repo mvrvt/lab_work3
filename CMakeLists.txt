@@ -24,4 +24,7 @@ add_executable(lab_work3 main.cpp
         src/SLAE.hpp
         src/Generators.hpp
         src/Matrices_io.hpp
-        src/Matrix_operators.hpp)
+        src/Matrix_operators.hpp
+        src/BandMatrix.hpp
+        src/lab2_files/LinkedList.hpp
+        src/lab2_files/ListSequence.hpp)

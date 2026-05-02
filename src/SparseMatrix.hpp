@@ -10,9 +10,9 @@ template <typename T>
 class SparseMatrix : public IMatrix<T> {
 public:
     SparseMatrix( size_t rows, size_t cols )
-        : elements_( 0 ), count_( 0 ), capacity_( 0 ), rows_( rows ), cols_( cols ) { }
+        : rows_( rows ), cols_( cols ), elements_() { }
 
-    ~SparseMatrix() override  = default;
+    ~SparseMatrix() override = default;
 
     size_t GetRows() const override { return rows_; }
     size_t GetCols() const override { return cols_; }
@@ -22,15 +22,12 @@ public:
             throw std::out_of_range( "SparseMatrix::Get: index out of range" );
 
         SearchResult result = BinarySearch( i, j );
-
-        if ( result.found ) {
+        if ( result.found )
             return elements_.Get( result.index ).value;
-        }
-
         return zero_val;
     }
 
-     void Set( size_t i, size_t j, const T& value ) override {
+    void Set( size_t i, size_t j, const T& value ) override {
         if ( i >= rows_ || j >= cols_ )
             throw std::out_of_range( "SparseMatrix::Set: index out of range" );
 
@@ -38,34 +35,35 @@ public:
 
         if ( result.found ) {
             if ( value == zero_val ) {
-                // Удаление: result.idx как точка начала
-                for ( size_t k = result.index; k < count_ - 1; ++k ) {
+                // Удаление: сдвиг элементов влево
+                for ( size_t k = result.index; k < elements_.GetCount() - 1; ++k )
                     elements_[k] = elements_[k + 1];
-                }
-                --count_;
+                elements_.Resize( elements_.GetCount() - 1 );
             } else {
-                // Обновление значения по найденному индексу
+                // Обновление существующего элемента
                 elements_[result.index].value = value;
             }
         } else {
             if ( value != zero_val ) {
-                // Вставка: result.index указывает на место, куда нужно вставить эл-нт
-                if ( count_ == capacity_ ) {
-                    size_t new_capacity = ( capacity_ == 0 ) ? 2 : capacity_ * 2;
-                    capacity_ = std::min( new_capacity, rows_ * cols_ );
-                    elements_.Resize( static_cast<int>( capacity_ ) );
-                }
+                // Вставка нового элемента
+                if ( elements_.GetCount() == rows_ * cols_ )
+                    throw std::length_error( "SparseMatrix::Set: too many non-zero elements" );
 
-                for ( int k = static_cast<int>( count_ ); k > result.index; --k ) {
+                // Увеличиваем размер на 1
+                size_t oldCount = elements_.GetCount();
+                elements_.Resize( oldCount + 1 );
+
+                // Сдвигаем элементы вправо, начиная с конца
+                for ( size_t k = oldCount; k > result.index; --k )
                     elements_[k] = elements_[k - 1];
-                }
 
+                // Вставляем новый элемент
                 elements_[result.index] = { i, j, value };
-                ++count_;
             }
         }
     }
 
+    // Операторы модификации
     IMatrix<T>& operator+=( const IMatrix<T>& other ) override {
         if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
             throw std::invalid_argument( "SparseMatrix::+=: size mismatch" );
@@ -73,17 +71,20 @@ public:
         const SparseMatrix<T>* sparse_other = dynamic_cast<const SparseMatrix<T>*>( &other );
 
         if ( sparse_other ) {
-            // Если другая матрица тоже разреженная, то пробегаемся только по её ненулевым эл-там
-            for ( size_t k = 0; k < sparse_other->count_; ++k ) {
-                const auto& el = sparse_other->elements_[k];
-                this->Set( el.row, el.col, this->Get( el.row, el.col ) + el.value );
+            // Проходим по всем ненулевым элементам другой матрицы
+            for ( size_t k = 0; k < sparse_other->elements_.GetCount(); ++k ) {
+                const auto& el = sparse_other->elements_.Get( k );
+                T newVal = this->Get( el.row, el.col ) + el.value;
+                this->Set( el.row, el.col, newVal );
             }
         } else {
+            // Плотная другая матрица – проходим по всем ячейкам
             for ( size_t i = 0; i < rows_; ++i ) {
                 for ( size_t j = 0; j < cols_; ++j ) {
-                    T other_val = other.Get( i, j );
-                    if ( other_val != zero_val ) {
-                        this->Set( i, j, this->Get( i, j ) + other_val );
+                    T otherVal = other.Get( i, j );
+                    if ( otherVal != zero_val ) {
+                        T newVal = this->Get( i, j ) + otherVal;
+                        this->Set( i, j, newVal );
                     }
                 }
             }
@@ -94,48 +95,53 @@ public:
     IMatrix<T>& operator-=( const IMatrix<T>& other ) override {
         if ( rows_ != other.GetRows() || cols_ != other.GetCols() )
             throw std::invalid_argument( "SparseMatrix::-=: size mismatch" );
-        // Аналогично operator+=, но со знаком минус
+
         const SparseMatrix<T>* sparse_other = dynamic_cast<const SparseMatrix<T>*>( &other );
+
         if ( sparse_other ) {
-            for ( size_t k = 0; k < sparse_other->count_; ++k ) {
-                const auto& el = sparse_other->elements_[k];
-                Set( el.row, el.col, Get( el.row, el.col ) - el.value );
+            for ( size_t k = 0; k < sparse_other->elements_.GetCount(); ++k ) {
+                const auto& el = sparse_other->elements_.Get( k );
+                T newVal = this->Get( el.row, el.col ) - el.value;
+                this->Set( el.row, el.col, newVal );
             }
         } else {
-            for ( size_t i = 0; i < rows_; ++i )
+            for ( size_t i = 0; i < rows_; ++i ) {
                 for ( size_t j = 0; j < cols_; ++j ) {
-                    T val = other.Get( i, j );
-                    if ( val != zero_val )
-                        Set( i, j, Get( i, j ) - val );
+                    T otherVal = other.Get( i, j );
+                    if ( otherVal != zero_val ) {
+                        T newVal = this->Get( i, j ) - otherVal;
+                        this->Set( i, j, newVal );
+                    }
                 }
+            }
         }
         return *this;
     }
 
     IMatrix<T>& operator*=( const T& scalar ) override {
         if ( scalar == zero_val ) {
-            count_ = 0;
+            // Обнуляем всю матрицу — удаляем все элементы
+            elements_.Resize(0);
             return *this;
         }
-        for ( size_t k = 0; k < count_; ++k ) {
+        for ( size_t k = 0; k < elements_.GetCount(); ++k )
             elements_[k].value *= scalar;
-        }
         return *this;
     }
 
     IMatrix<T>& operator/=( const T& scalar ) override {
         if ( scalar == zero_val )
             throw std::domain_error( "SparseMatrix::/=: division by zero" );
-        for ( size_t k = 0; k < count_; ++k )
+        for ( size_t k = 0; k < elements_.GetCount(); ++k )
             elements_[k].value /= scalar;
         return *this;
     }
 
     T Norm() const override {
         double sum = 0.0;
-        for ( size_t k = 0; k < count_; ++k ) {
+        for ( size_t k = 0; k < elements_.GetCount(); ++k ) {
             using std::abs;
-            double mod = static_cast<double>( abs( elements_[k].value ) );
+            double mod = static_cast<double>( abs( elements_.Get( k ).value ) );
             sum += mod * mod;
         }
         return static_cast<T>( std::sqrt( sum ) );
@@ -148,38 +154,30 @@ private:
         T      value;
     };
 
-    // Собственная структура вместо std::pair
     struct SearchResult {
-        int  index;
-        bool found;
+        size_t index;
+        bool   found;
     };
 
     DynamicArray<Element> elements_;
-    size_t                count_;
-    size_t                capacity_;
-    size_t                rows_;
-    size_t                cols_;
+    size_t rows_;
+    size_t cols_;
 
     inline static const T zero_val { };
 
+    // Бинарный поиск элемента по (row, col) в отсортированном списке
     SearchResult BinarySearch( size_t r, size_t c ) const {
-        int left = 0;
-        int right = static_cast<int>( count_ ) - 1;
-        int mid = 0;
-
-        while ( left <= right ) {
-            mid = left + ( right - left) / 2;
-            const auto& el = elements_[mid];
-
+        size_t left = 0;
+        size_t right = elements_.GetCount();
+        while ( left < right ) {
+            size_t mid = left + (right - left) / 2;
+            const Element& el = elements_.Get( mid );
             if ( el.row == r && el.col == c )
-                return { mid, true }; // Возвращается объект структуры
-
-            // Если текущий эл-нт меньше искомого (сначала по row, потом по col)
-            if ( el.row < r || ( el.row == r && el.col < c ) ) {
+                return { mid, true };
+            if ( el.row < r || (el.row == r && el.col < c) )
                 left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
+            else
+                right = mid;
         }
         return { left, false };
     }
