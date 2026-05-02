@@ -14,22 +14,12 @@ public:
 
 template <class T>
 class DynamicArray : public ICollection<T>, public IEnumerable<T> {
-private:
-    T*  data_;
-    int size_;
-
-    void CheckIndex( int index ) const {
-        if ( index < 0 || index >= size_ ) {
-            throw IndexOutOfRange( "DynamicArray: index out of range" );
-        }
-    }
-
 public:
     // Встроенный класс-итератор
     class ArrayIterator : public IEnumerator<T> {
     private:
-        DynamicArray<T>& arr_; // ссылка на массив
-        int index_;            // -1 - позиция до первого элемента
+        DynamicArray<T>& arr_;
+        int index_;
 
     public:
         explicit ArrayIterator( DynamicArray<T>& arr ) : arr_( arr ), index_( -1 ) { }
@@ -50,12 +40,12 @@ public:
         }
     };
 
-    //======================================================
-
     // Фабричный метод — создаёт итератор для этого массива
     IEnumerator<T>* GetEnumerator() override {
         return new ArrayIterator( *this );
     }
+
+    // Конструкторы
 
     DynamicArray( T* items, int count ) : data_( nullptr ), size_( count ) {
         if ( count < 0 ) {
@@ -65,11 +55,10 @@ public:
             throw std::invalid_argument( "DynamicArray: items is nullptr" );
         }
 
-        if ( size_ > 0 ) {
-            data_ = new T[size_];
-            for ( int idx = 0; idx < size_; ++idx ) {
-                data_[idx] = items[idx];
-            }
+        capacity_ = ( count == 0 ) ? 1 : count;
+        data_ = new T[capacity_];
+        for ( int idx = 0; idx < size_; ++idx ) {
+            data_[idx] = items[idx];
         }
     }
 
@@ -78,26 +67,28 @@ public:
             throw std::invalid_argument( "DynamicArray: size can't be negative" );
         }
 
-        if ( size_ > 0 ) {
-            data_ = new T[size_];
-        }
+        capacity_ = ( size == 0 ) ? 1 : size;
+        data_ = new T[capacity_]();
+        // новые элементы уже инициализированы нулями
     }
 
-    DynamicArray( const DynamicArray<T>& other ) : data_( nullptr ), size_( other.size_ ) {
-        if ( size_ > 0 ) {
-            data_ = new T[size_];
+    DynamicArray( const DynamicArray<T>& other )
+        : data_( nullptr ), size_( other.size_ ), capacity_( other.capacity_ ) {
+        if ( capacity_ > 0 ) {
+            data_ = new T[capacity_];
             for ( int idx = 0; idx < size_; ++idx ) {
                 data_[idx] = other.data_[idx];
             }
         }
     }
 
-    DynamicArray<T>& operator=( const DynamicArray <T>& other ) {
+    DynamicArray<T>& operator=( const DynamicArray<T>& other ) {
         if ( this != &other ) {
             T* new_data = nullptr;
+            int new_capacity = other.capacity_;
 
-            if ( other.size_  > 0 ) {
-                new_data = new T[other.size_];
+            if ( new_capacity > 0 ) {
+                new_data = new T[new_capacity];
                 for ( int idx = 0; idx < other.size_; ++idx ) {
                     new_data[idx] = other.data_[idx];
                 }
@@ -105,6 +96,7 @@ public:
             delete[] data_;
             data_ = new_data;
             size_ = other.size_;
+            capacity_ = new_capacity;
         }
         return *this;
     }
@@ -113,11 +105,20 @@ public:
         delete[] data_;
     }
 
-    T&       Get( std::size_t index )       override { CheckIndex( index ); return data_[index]; }
-    const T& Get( std::size_t index ) const override { CheckIndex( index ); return data_[index]; }
+    // Доступ
+
+    T& Get( std::size_t index ) override {
+        CheckIndex( static_cast<int>( index ) );
+        return data_[index];
+    }
+
+    const T& Get( std::size_t index ) const override {
+        CheckIndex( static_cast<int>( index ) );
+        return data_[index];
+    }
 
     std::size_t GetCount() const override {
-        return size_;
+        return static_cast<std::size_t>( size_ );
     }
 
     void Set( int index, const T& value ) {
@@ -125,27 +126,43 @@ public:
         data_[index] = value;
     }
 
-    void Resize( int new_size ) {
-        if ( new_size < 0 ) {
+    // Управление размером
+
+    void Resize( int newSize ) {
+        if ( newSize < 0 ) {
             throw std::invalid_argument( "DynamicArray: new_size can't be negative" );
         }
 
-        T* new_data = nullptr;
-
-        if ( new_size > 0 ) {
-            new_data = new T[new_size];
-            int copy_count = ( new_size < size_ ) ? new_size : size_;
-
-            for ( int idx = 0; idx < copy_count; ++idx ) {
-                new_data[idx] = data_[idx];
-            }
+        if ( newSize <= capacity_ ) {
+            size_ = newSize;
+            return;
         }
 
+        // Не хватает – увеличиваем capacity_ (удваиваем, пока не станет >= newSize)
+        int newCapacity = capacity_;
+        while ( newCapacity < newSize ) {
+            newCapacity *= 2;
+        }
+
+        T* newData = new T[newCapacity];
+        // Копируем старые элементы (их size_ штук)
+        for ( int idx = 0; idx < size_; ++idx ) {
+            newData[idx] = data_[idx];
+        }
+        // Новые элементы (если надо) будут проинициализированы по умолчанию,
+        // но мы их всё равно перезапишем позже через Set; можно оставить как есть.
+
         delete[] data_;
-        data_ = new_data;
-        size_ = new_size;
+        data_ = newData;
+        capacity_ = newCapacity;
+        size_ = newSize;
     }
 
+    int GetCapacity() const {
+        return capacity_;
+    }
+
+    // Операторы индексации для удобства
     T& operator[]( int index ) {
         CheckIndex( index );
         return data_[index];
@@ -155,4 +172,16 @@ public:
         CheckIndex( index );
         return data_[index];
     }
+
+private:
+    T*  data_;
+    int size_;
+    int capacity_;
+
+    void CheckIndex( int index ) const {
+        if ( index < 0 || index >= size_ ) {
+            throw IndexOutOfRange( "DynamicArray: index out of range" );
+        }
+    }
+
 };
