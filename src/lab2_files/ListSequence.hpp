@@ -2,7 +2,7 @@
 
 #include <cstddef> // для size_t
 #include "Sequence.h"
-#include "LinkedList.h"
+#include "LinkedList.hpp"
 #include "SequenceIterator.h"
 
 // forward declaration

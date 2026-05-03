@@ -51,10 +51,18 @@ namespace LinAlg {
             // Выбор ведущего элемента (pivot)
             if ( use_pivoting ) {
                 size_t pivot_row = k;
-                T max_val = std::abs( mat.Get( k, k ) );
+
+                // Включаем ADL: компилятор найдет std::abs для double
+                // и глобальный abs() для твоего кастомного Complex
+                using std::abs;
+
+                // Используем auto, потому что модуль комплексного числа - это double,
+                // а не Complex. auto сам выведет правильный тип (double).
+                auto max_val = abs( mat.Get( k, k ) );
+
                 for ( size_t i = k + 1; i < n; ++i ) {
-                    if ( std::abs( mat.Get( i, k ) ) > max_val ) {
-                        max_val = std::abs( mat.Get( i, k ) );
+                    if ( abs( mat.Get( i, k ) ) > max_val ) {
+                        max_val = abs( mat.Get( i, k ) );
                         pivot_row = i;
                     }
                 }
@@ -148,7 +156,8 @@ namespace LinAlg {
             }
 
             T norm = v.Norm();
-            if (norm == T(0)) throw std::logic_error("QRDecomposition: linearly dependent columns");
+            using std::abs; // Опять применяем магию ADL для поддержки и double, и Complex
+            if (abs(norm) < 1e-9) throw std::logic_error("QRDecomposition: linearly dependent columns");
             R.Set(j, j, norm);
 
             for (size_t i = 0; i < n; ++i) {

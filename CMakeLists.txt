@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 4.1)
-project(lab_work3)
+cmake_minimum_required( VERSION 4.1 )
+project( lab_work3 )
 
-set(CMAKE_CXX_STANDARD 20)
+set( CMAKE_CXX_STANDARD 20 )
 
-add_executable(lab_work3 main.cpp
+add_executable( lab_work3 main.cpp
         src/lab2_files/ArraySequence.h
         src/lab2_files/DynamicArray.h
         src/lab2_files/ICollection.h
@@ -27,4 +27,26 @@ add_executable(lab_work3 main.cpp
         src/Matrix_operators.hpp
         src/BandMatrix.hpp
         src/lab2_files/LinkedList.hpp
-        src/lab2_files/ListSequence.hpp)
+        src/lab2_files/ListSequence.hpp
+)
+
+include( FetchContent )
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+FetchContent_MakeAvailable( googletest )
+
+add_executable( LabWork_tests
+        tests/SquareMatrix_tests.cpp
+        tests/RectangularMatrix.cpp
+        tests/SparseMatrix_tests.cpp
+        tests/TriangularMatrix_tests.cpp
+        tests/Complex_tests.cpp
+        tests/DiagonalMatrix_tests.cpp
+        tests/BandMatrix_tests.cpp
+        tests/Vector_tests.cpp
+        tests/SLAE_tests.cpp
+)
+
+target_link_libraries( LabWork_tests gtest_main )
