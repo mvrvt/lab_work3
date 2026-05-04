@@ -10,7 +10,6 @@
 #include "src/SparseMatrix.hpp"
 #include "src/TriangularMatrix.hpp"
 #include "src/SquareMatrix.hpp"
-
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -28,16 +27,16 @@ struct DecompositionResult {
     SquareMatrix<T> second;
 };
 
-// ===================================================================
-// УТИЛИТЫ И БЕЗОПАСНЫЙ ВВОД
-// ===================================================================
+// Утилиты и безопасный ввод
 
 void ClearInput() {
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-int ReadInt(const std::string& prompt) {
+int ReadInt(const std::string& prompt,
+            int min_val = std::numeric_limits<int>::min(),
+            int max_val = std::numeric_limits<int>::max()) {
     while (true) {
         std::cout << prompt;
         std::string line;
@@ -47,9 +46,21 @@ int ReadInt(const std::string& prompt) {
             size_t pos;
             int value = std::stoi(line, &pos);
             if (pos != line.length()) throw std::invalid_argument("");
+
+            // Защита от некорректного диапазона
+            if (value < min_val || value > max_val) {
+                if (min_val != std::numeric_limits<int>::min() && max_val != std::numeric_limits<int>::max()) {
+                    std::cout << " [!] Ошибка: введите число от " << min_val << " до " << max_val << ".\n";
+                } else if (min_val != std::numeric_limits<int>::min()) {
+                    std::cout << " [!] Ошибка: число должно быть не меньше " << min_val << ".\n";
+                } else {
+                    std::cout << " [!] Ошибка: число вне допустимого диапазона.\n";
+                }
+                continue; // Запрашиваем ввод заново
+            }
             return value;
         } catch (...) {
-            std::cout << " [!] Введите целое число.\n";
+            std::cout << " [!] Введите корректное целое число.\n";
         }
     }
 }
@@ -69,9 +80,7 @@ T ReadValue(const std::string& prompt) {
     }
 }
 
-// ===================================================================
-// ГЕНЕРАТОРЫ СЛУЧАЙНЫХ ЧИСЕЛ
-// ===================================================================
+// Генераторы случайных значений
 
 static std::mt19937 gRng{std::random_device{}()};
 
@@ -85,7 +94,6 @@ static int RandomInt(int lo, int hi) {
     return dist(gRng);
 }
 
-// Полиморфный генератор с C++17 if constexpr
 template <typename T>
 T RandomValue(double lo, double hi) {
     if constexpr (std::is_same_v<T, double>) {
@@ -104,7 +112,7 @@ static void FillMatrixRandom(IMatrix<T>& mat, double lo, double hi) {
 
 template <typename T>
 void OfferNorm(const IMatrix<T>& mat) {
-    int ch = ReadInt(" 1 – вычислить норму Фробениуса, 0 – продолжить: ");
+    int ch = ReadInt(" 1 – вычислить норму Фробениуса, 0 – продолжить: ", 0, 1);
     if (ch == 1) {
         std::cout << " Норма Фробениуса: " << mat.Norm() << "\n";
     }
@@ -115,10 +123,6 @@ void PrintMatrixInfo(const IMatrix<T>& mat, const std::string& name) {
     std::cout << name << " [" << mat.GetRows() << "x" << mat.GetCols() << "]:\n";
     std::cout << mat << std::endl;
 }
-
-// ===================================================================
-// МЕНЮ ОПЕРАЦИЙ НАД МАТРИЦАМИ
-// ===================================================================
 
 template <typename T>
 void MatrixOpsMenu(MutableArraySequence<IMatrix<T>*>& matrices, int index) {
@@ -131,11 +135,11 @@ void MatrixOpsMenu(MutableArraySequence<IMatrix<T>*>& matrices, int index) {
         std::cout << " |  3. Умножить на скаляр                    |\n";
         std::cout << " |  4. Сложить с другой матрицей             |\n";
         std::cout << " |  5. Элементарное преобразование строк     |\n";
-        std::cout << " |  6. QR-разложение (БОНУС)                 |\n";
+        std::cout << " |  6. QR-разложение                         |\n";
         std::cout << " |  0. Назад                                 |\n";
         std::cout << " |-------------------------------------------|\n";
 
-        int choice = ReadInt(" Выбор: ");
+        int choice = ReadInt(" Выбор: ", 0, 6);
         if (choice == 0) break;
 
         try {
@@ -148,18 +152,14 @@ void MatrixOpsMenu(MutableArraySequence<IMatrix<T>*>& matrices, int index) {
                 *m *= scalar;
                 std::cout << " Успешно умножено.\n";
             } else if (choice == 4) {
-                int other_idx = ReadInt(" Индекс второй матрицы: ");
-                if (other_idx >= 0 && other_idx < matrices.GetLength()) {
-                    *m += *(matrices.Get(other_idx));
-                    std::cout << " Матрицы успешно сложены.\n";
-                } else {
-                    std::cout << " [!] Неверный индекс.\n";
-                }
+                int other_idx = ReadInt(" Индекс второй матрицы: ", 0, matrices.GetLength() - 1);
+                *m += *(matrices.Get(other_idx));
+                std::cout << " Матрицы успешно сложены.\n";
             } else if (choice == 5) {
                 Matrix<T>* dense = dynamic_cast<Matrix<T>*>(m);
                 if (dense) {
-                    int r1 = ReadInt(" Индекс первой строки: ");
-                    int r2 = ReadInt(" Индекс второй строки: ");
+                    int r1 = ReadInt(" Индекс первой строки: ", 0, m->GetRows() - 1);
+                    int r2 = ReadInt(" Индекс второй строки: ", 0, m->GetRows() - 1);
                     dense->SwapRows(r1, r2);
                     std::cout << " Строки поменяны местами.\n";
                 } else {
@@ -174,8 +174,6 @@ void MatrixOpsMenu(MutableArraySequence<IMatrix<T>*>& matrices, int index) {
                 } else {
                     std::cout << " [!] QR-разложение реализовано только для квадратных матриц.\n";
                 }
-            } else {
-                std::cout << " [!] Неизвестная команда.\n";
             }
         } catch (const std::exception& e) {
             std::cout << " [!] Ошибка: " << e.what() << "\n";
@@ -187,32 +185,32 @@ template <typename T>
 void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
     while (true) {
         std::cout << "\n";
-        std::cout << " |===========================================|\n";
-        std::cout << " |               МЕНЮ МАТРИЦ                 |\n";
-        std::cout << " |===========================================|\n";
+        std::cout << " |============================================|\n";
+        std::cout << " |                 МЕНЮ МАТРИЦ                |\n";
+        std::cout << " |============================================|\n";
         std::cout << " |  В памяти: " << std::setw(30) << std::left << matrices.GetLength() << "|\n";
-        std::cout << " |  1.  Прямоугольная матрица (Matrix)       |\n";
-        std::cout << " |  2.  Квадратная матрица (SquareMatrix)    |\n";
-        std::cout << " |  3.  Диагональная матрица (DiagonalMatrix)|\n";
-        std::cout << " |  4.  Ленточная матрица (BandMatrix)       |\n";
-        std::cout << " |  5.  Разреженная матрица (SparseMatrix)   |\n";
+        std::cout << " |  1.  Прямоугольная матрица (Matrix)        |\n";
+        std::cout << " |  2.  Квадратная матрица (SquareMatrix)     |\n";
+        std::cout << " |  3.  Диагональная матрица (DiagonalMatrix) |\n";
+        std::cout << " |  4.  Ленточная матрица (BandMatrix)        |\n";
+        std::cout << " |  5.  Разреженная матрица (SparseMatrix)    |\n";
         std::cout << " |  6.  Треугольная матрица (TriangularMatrix)|\n";
-        std::cout << " |  7.  Выбрать матрицу для операций         |\n";
-        std::cout << " |  8.  Показать все сохраненные матрицы     |\n";
-        std::cout << " |  0.  Назад                                |\n";
-        std::cout << " |===========================================|\n";
-        int choice = ReadInt(" Выбор: ");
+        std::cout << " |  7.  Выбрать матрицу для операций          |\n";
+        std::cout << " |  8.  Показать все сохраненные матрицы      |\n";
+        std::cout << " |  0.  Назад                                 |\n";
+        std::cout << " |============================================|\n";
 
+        int choice = ReadInt(" Выбор: ", 0, 8);
         if (choice == 0) break;
 
         try {
             IMatrix<T>* new_mat = nullptr;
 
             if (choice == 1) {
-                size_t rows = ReadInt(" Количество строк: ");
-                size_t cols = ReadInt(" Количество столбцов: ");
+                size_t rows = ReadInt(" Количество строк: ", 1);
+                size_t cols = ReadInt(" Количество столбцов: ", 1);
                 new_mat = new Matrix<T>(rows, cols);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ");
+                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
                 if (fill == 1) {
                     std::cout << " Введите элементы построчно:\n";
                     for (size_t i = 0; i < rows; ++i)
@@ -225,9 +223,9 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 }
             }
             else if (choice == 2) {
-                size_t n = ReadInt(" Размер: ");
+                size_t n = ReadInt(" Размер: ", 1);
                 new_mat = new SquareMatrix<T>(n);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ");
+                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
                 if (fill == 1) {
                     std::cout << " Введите элементы построчно:\n";
                     for (size_t i = 0; i < n; ++i)
@@ -240,9 +238,9 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 }
             }
             else if (choice == 3) {
-                size_t n = ReadInt(" Размер: ");
+                size_t n = ReadInt(" Размер: ", 1);
                 new_mat = new DiagonalMatrix<T>(n);
-                int fill = ReadInt(" Заполнить: 1 – вручную (диагональ), 2 – случайно: ");
+                int fill = ReadInt(" Заполнить: 1 – вручную (диагональ), 2 – случайно: ", 1, 2);
                 if (fill == 1) {
                     for (size_t i = 0; i < n; ++i)
                         new_mat->Set(i, i, ReadValue<T>(" diag[" + std::to_string(i) + "]: "));
@@ -254,13 +252,13 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 }
             }
             else if (choice == 4) {
-                size_t n = ReadInt(" Размер: ");
+                size_t n = ReadInt(" Размер: ", 1);
                 std::cout << " Будут использованы смещения -1, 0, 1 (трёхдиагональная матрица).\n";
                 DynamicArray<int> offsets;
                 offsets.Append(-1); offsets.Append(0); offsets.Append(1);
 
                 BandMatrix<T>* band = new BandMatrix<T>(n, offsets);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ");
+                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
                 if (fill == 1) {
                     for (size_t i = 1; i < n; ++i) band->Set(i, i-1, ReadValue<T>(" [" + std::to_string(i) + "][" + std::to_string(i-1) + "]: "));
                     for (size_t i = 0; i < n; ++i) band->Set(i, i, ReadValue<T>(" [" + std::to_string(i) + "][" + std::to_string(i) + "]: "));
@@ -275,20 +273,20 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 new_mat = band;
             }
             else if (choice == 5) {
-                size_t rows = ReadInt(" Количество строк: ");
-                size_t cols = ReadInt(" Количество столбцов: ");
+                size_t rows = ReadInt(" Количество строк: ", 1);
+                size_t cols = ReadInt(" Количество столбцов: ", 1);
                 SparseMatrix<T>* sparse = new SparseMatrix<T>(rows, cols);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ");
+                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
                 if (fill == 1) {
-                    int nz = ReadInt(" Сколько ненулевых элементов ввести? ");
+                    int nz = ReadInt(" Сколько ненулевых элементов ввести? ", 0, rows * cols);
                     for (int k = 0; k < nz; ++k) {
-                        size_t i = ReadInt(" строка: ");
-                        size_t j = ReadInt(" столбец: ");
+                        size_t i = ReadInt(" строка: ", 0, rows - 1);
+                        size_t j = ReadInt(" столбец: ", 0, cols - 1);
                         T val = ReadValue<T>(" значение: ");
                         sparse->Set(i, j, val);
                     }
                 } else {
-                    int nz = ReadInt(" Сколько ненулевых элементов сгенерировать? ");
+                    int nz = ReadInt(" Сколько ненулевых элементов сгенерировать? ", 0, rows * cols);
                     double lo = ReadValue<double>(" Нижняя граница (вещественное число): ");
                     double hi = ReadValue<double>(" Верхняя граница (вещественное число): ");
 
@@ -306,11 +304,11 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 new_mat = sparse;
             }
             else if (choice == 6) {
-                size_t n = ReadInt(" Размер: ");
-                int upLow = ReadInt(" 0 – верхняя треугольная, 1 – нижняя треугольная: ");
+                size_t n = ReadInt(" Размер: ", 1);
+                int upLow = ReadInt(" 0 – верхняя треугольная, 1 – нижняя треугольная: ", 0, 1);
                 TriangularType tt = (upLow == 0) ? TriangularType::Upper : TriangularType::Lower;
                 TriangularMatrix<T>* tri = new TriangularMatrix<T>(n, tt);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ");
+                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
                 if (fill == 1) {
                     if (tt == TriangularType::Upper) {
                         for (size_t i = 0; i < n; ++i)
@@ -335,15 +333,18 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 new_mat = tri;
             }
             else if (choice == 7) {
-                int idx = ReadInt(" Введите индекс матрицы: ");
-                if (idx >= 0 && idx < matrices.GetLength()) {
-                    MatrixOpsMenu(matrices, idx);
-                } else {
-                    std::cout << " [!] Индекс вне диапазона.\n";
+                if (matrices.GetLength() == 0) {
+                    std::cout << " [!] Нет созданных матриц.\n";
+                    continue;
                 }
+                int idx = ReadInt(" Введите индекс матрицы: ", 0, matrices.GetLength() - 1);
+                MatrixOpsMenu(matrices, idx);
                 continue;
             }
             else if (choice == 8) {
+                if (matrices.GetLength() == 0) {
+                    std::cout << " [!] Нет созданных матриц.\n";
+                }
                 for (int i = 0; i < matrices.GetLength(); ++i) {
                     std::cout << "\nМатрица [" << i << "]:\n" << *(matrices.Get(i));
                 }
@@ -362,16 +363,12 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
     }
 }
 
-// ===================================================================
-// РЕШЕНИЕ СЛАУ (РАБОТА С КОНКРЕТНЫМИ СИСТЕМАМИ)
-// ===================================================================
-
 template <typename T>
 void SLAEMenu() {
     while (true) {
         std::cout << "\n";
         std::cout << " |===========================================|\n";
-        std::cout << " |           Решение систем линейных уравнений |\n";
+        std::cout << " |         Решение систем уравнений          |\n";
         std::cout << " |===========================================|\n";
         std::cout << " |  1.  Метод Гаусса (с выбором/без)         |\n";
         std::cout << " |  2.  LU-разложение + решение              |\n";
@@ -379,15 +376,16 @@ void SLAEMenu() {
         std::cout << " |  4.  Ручной ввод СЛАУ                     |\n";
         std::cout << " |  0.  Назад                                |\n";
         std::cout << " |===========================================|\n";
-        int choice = ReadInt(" Выбор: ");
+
+        int choice = ReadInt(" Выбор: ", 0, 4);
         if (choice == 0) break;
 
         try {
             if (choice == 1) {
-                size_t n = ReadInt(" Размер системы: ");
+                size_t n = ReadInt(" Размер системы: ", 1);
                 auto A = LinAlg::GenerateRandomMatrix<T>(n, 42);
                 auto b = LinAlg::GenerateRandomVector<T>(n, 42);
-                int usePivot = ReadInt(" Использовать выбор ведущего? (1-да,0-нет): ");
+                int usePivot = ReadInt(" Использовать выбор ведущего? (1-да,0-нет): ", 0, 1);
                 Vector<T> x = LinAlg::SolveGauss(A, b, usePivot == 1);
                 std::cout << " Решение x:\n[ ";
                 for (size_t i = 0; i < std::min(n, static_cast<size_t>(5)); ++i) std::cout << x[i] << " ";
@@ -395,7 +393,7 @@ void SLAEMenu() {
                 std::cout << " Норма невязки: " << (b - A * x).Norm() << "\n";
             }
             else if (choice == 2) {
-                size_t n = ReadInt(" Размер системы: ");
+                size_t n = ReadInt(" Размер системы: ", 1);
                 auto A = LinAlg::GenerateRandomMatrix<T>(n, 42);
                 auto b = LinAlg::GenerateRandomVector<T>(n, 42);
                 std::cout << " Случайная матрица A и вектор b.\n";
@@ -407,7 +405,7 @@ void SLAEMenu() {
                 std::cout << " Норма невязки: " << (b - A * x).Norm() << "\n";
             }
             else if (choice == 3) {
-                size_t n = ReadInt(" Размер квадратной матрицы (рекомендуется 3-5): ");
+                size_t n = ReadInt(" Размер квадратной матрицы (рекомендуется 3-5): ", 1);
                 auto A = LinAlg::GenerateRandomMatrix<T>(n, 123);
                 std::cout << "A:\n" << A;
                 auto [Q, R] = LinAlg::QRDecomposition(A);
@@ -415,7 +413,7 @@ void SLAEMenu() {
                 std::cout << "R:\n" << R;
             }
             else if (choice == 4) {
-                size_t n = ReadInt(" Размер системы: ");
+                size_t n = ReadInt(" Размер системы: ", 1);
                 SquareMatrix<T> A(n);
                 Vector<T> b(n);
                 std::cout << " Введите матрицу A построчно:\n";
@@ -437,10 +435,6 @@ void SLAEMenu() {
         }
     }
 }
-
-// ===================================================================
-// ТЕСТЫ ПРОИЗВОДИТЕЛЬНОСТИ МАСТРИЦ (ЛР 3)
-// ===================================================================
 
 template <typename T>
 void PerformanceMenu() {
@@ -496,11 +490,10 @@ void PerformanceMenu() {
     std::cin.get();
 }
 
-// Тесты производительности СЛАУ
-
 template <typename T>
 void RunSLAEExperiments() {
-    std::cout << "\n================================================================================\n";
+    std::cout << "\n";
+    std::cout << "================================================================================\n";
     std::cout << "                        ТЕСТЫ ПРОИЗВОДИТЕЛЬНОСТИ СЛАУ                           \n";
     std::cout << "================================================================================\n";
 
@@ -543,7 +536,6 @@ void RunSLAEExperiments() {
     const int numKs = sizeof(ks) / sizeof(ks[0]);
     SquareMatrix<T> A_multi = LinAlg::GenerateRandomMatrix<T>(n_multi, 67);
 
-    // Используем полиморфный массив вместо std::vector
     MutableArraySequence<Vector<T>> rhs_list;
     for (int i = 0; i < 50; ++i) {
         rhs_list.Append(LinAlg::GenerateRandomVector<T>(n_multi, i));
@@ -603,26 +595,25 @@ void RunSLAEExperiments() {
 
 template <typename T>
 void RunApp() {
-    // Хранилище реализовано строго через MutableArraySequence (По ТЗ ЛР 3)
     MutableArraySequence<IMatrix<T>*> matrices;
 
     while (true) {
         std::cout << "\n";
-        std::cout << " |===========================================|\n";
-        std::cout << " |  1.  Работа с матрицами                   |\n";
-        std::cout << " |  2.  Решение СЛАУ (Гаусс, LU, QR)         |\n";
-        std::cout << " |  3.  Тесты производительности (Матрицы)   |\n";
+        std::cout << " |=======================================================|\n";
+        std::cout << " |  1.  Работа с матрицами                               |\n";
+        std::cout << " |  2.  Решение СЛАУ (Гаусс, LU, QR)                     |\n";
+        std::cout << " |  3.  Тесты производительности (Матрицы)               |\n";
         std::cout << " |  4.  Тесты производительности СЛАУ (Замеры времени)   |\n";
-        std::cout << " |  0.  Сменить тип данных / Выход           |\n";
-        std::cout << " |===========================================|\n";
-        int choice = ReadInt(" Выбор: ");
+        std::cout << " |  0.  Сменить тип данных / Выход                       |\n";
+        std::cout << " |=======================================================|\n";
+
+        int choice = ReadInt(" Выбор: ", 0, 4);
 
         if (choice == 0) break;
         else if (choice == 1) MatrixMenu<T>(matrices);
         else if (choice == 2) SLAEMenu<T>();
         else if (choice == 3) PerformanceMenu<T>();
         else if (choice == 4) RunSLAEExperiments<T>();
-        else std::cout << " [!] Неверный выбор.\n";
     }
 
     for (int i = 0; i < matrices.GetLength(); ++i) {
@@ -632,8 +623,8 @@ void RunApp() {
 
 int main() {
     std::cout << "\n |===========================================|\n";
-    std::cout << " |      Лабораторная работа №3 (Информатика)  |\n";
-    std::cout << " |            + Линейная алгебра              |\n";
+    std::cout << " |      Лабораторная работа №3 (Информатика) |\n";
+    std::cout << " |            + Линейная алгебра             |\n";
     std::cout << " |===========================================|\n";
     while (true) {
         std::cout << "\n Выберите тип данных:\n";
@@ -641,14 +632,13 @@ int main() {
         std::cout << " 2. Комплексные числа (Complex<double>)\n";
         std::cout << " 0. Выход\n";
 
-        int choice = ReadInt(" Выбор: ");
+        int choice = ReadInt(" Выбор: ", 0, 2);
         if (choice == 0) {
             std::cout << "\n До свидания!\n";
             break;
         }
         else if (choice == 1) RunApp<double>();
         else if (choice == 2) RunApp<Complex<double>>();
-        else std::cout << " [!] Неизвестная команда.\n";
     }
     return 0;
 }

@@ -14,7 +14,6 @@ add_executable( lab_work3 main.cpp
         src/IMatrix.hpp
         src/Matrix.hpp
         src/SquareMatrix.hpp
-        tests/SquareMatrix_tests.cpp
         src/TriangularMatrix.hpp
         src/DiagonalMatrix.hpp
         src/SparseMatrix.hpp
