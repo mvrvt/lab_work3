@@ -8,7 +8,7 @@
 template <typename T>
 class BandMatrix : public IMatrix<T> {
 public:
-    // Конструктор: size – размер квадратной матрицы, offsets – список смещений диагоналей (например, {-1,0,1})
+    // Конструктор: size - размер квадратной матрицы, offsets - список смещений диагоналей (например, {-1,0,1})
     BandMatrix( size_t size, const DynamicArray<int>& offsets )
         : size_( size ), offsets_( offsets ), data_() {
         if ( size_ == 0 ) throw std::invalid_argument( "BandMatrix: size must be positive" );

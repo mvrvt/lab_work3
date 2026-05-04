@@ -74,7 +74,7 @@ public:
         Sequence<T>* result = this->CreateEmpty();
         for ( int idx = start; idx <= end; ++idx ) {
             Sequence<T>* next = result->Append( items_->Get( idx ) );
-            if ( next != result ) delete result; // для Immutable – удаляем старую копию
+            if ( next != result ) delete result; // для Immutable - удаляем старую копию
             result = next;
         }
         return result;

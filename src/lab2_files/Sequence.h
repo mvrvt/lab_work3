@@ -13,7 +13,7 @@ template <class T> class MutableArraySequence;
 template <class T>
 class Sequence : public ICollection<T>, public IEnumerable<T> {
 public:
-    // GetEnumerator() унаследован от IEnumerable<T> как чисто виртуальный —
+    // GetEnumerator() унаследован от IEnumerable<T> как чисто виртуальный
     // каждый конкретный наследник (ArraySequence, ListSequence) обязан
     // его переопределить через override.
 
@@ -136,7 +136,7 @@ public:
         return GetSubsequence( 0, actual - 1 );
     }
 
-    // M-2.1: FlatMap — каждый элемент превращается в подпоследовательность,
+    // M-2.1: FlatMap - каждый элемент превращается в подпоследовательность,
     // все подпоследовательности склеиваются в одну
     // Возвращает MutableArraySequence<T2> (т.к. тип T2 отличается от T,
     // нельзя использовать CreateEmpty())
@@ -164,7 +164,7 @@ public:
     }
 
 
-    // M-2.1: Zip — соединяет this и other в список пар
+    // M-2.1: Zip - соединяет this и other в список пар
     // Длина результата = min(len(this), len(other))
     template <typename T2>
     Sequence<std::pair<T, T2>>* Zip( const Sequence<T2>* other ) const {

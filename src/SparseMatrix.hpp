@@ -78,7 +78,7 @@ public:
                 this->Set( el.row, el.col, newVal );
             }
         } else {
-            // Плотная другая матрица – проходим по всем ячейкам
+            // Плотная другая матрица - проходим по всем ячейкам
             for ( size_t i = 0; i < rows_; ++i ) {
                 for ( size_t j = 0; j < cols_; ++j ) {
                     T otherVal = other.Get( i, j );
@@ -120,7 +120,7 @@ public:
 
     IMatrix<T>& operator*=( const T& scalar ) override {
         if ( scalar == zero_val ) {
-            // Обнуляем всю матрицу — удаляем все элементы
+            // Обнуляем всю матрицу - удаляем все элементы
             elements_.Resize(0);
             return *this;
         }

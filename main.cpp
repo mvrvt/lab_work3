@@ -112,7 +112,7 @@ static void FillMatrixRandom(IMatrix<T>& mat, double lo, double hi) {
 
 template <typename T>
 void OfferNorm(const IMatrix<T>& mat) {
-    int ch = ReadInt(" 1 – вычислить норму Фробениуса, 0 – продолжить: ", 0, 1);
+    int ch = ReadInt(" 1 - вычислить норму Фробениуса, 0 - продолжить: ", 0, 1);
     if (ch == 1) {
         std::cout << " Норма Фробениуса: " << mat.Norm() << "\n";
     }
@@ -210,7 +210,7 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 size_t rows = ReadInt(" Количество строк: ", 1);
                 size_t cols = ReadInt(" Количество столбцов: ", 1);
                 new_mat = new Matrix<T>(rows, cols);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
+                int fill = ReadInt(" Заполнить: 1 - вручную, 2 - случайно: ", 1, 2);
                 if (fill == 1) {
                     std::cout << " Введите элементы построчно:\n";
                     for (size_t i = 0; i < rows; ++i)
@@ -225,7 +225,7 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
             else if (choice == 2) {
                 size_t n = ReadInt(" Размер: ", 1);
                 new_mat = new SquareMatrix<T>(n);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
+                int fill = ReadInt(" Заполнить: 1 - вручную, 2 - случайно: ", 1, 2);
                 if (fill == 1) {
                     std::cout << " Введите элементы построчно:\n";
                     for (size_t i = 0; i < n; ++i)
@@ -240,7 +240,7 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
             else if (choice == 3) {
                 size_t n = ReadInt(" Размер: ", 1);
                 new_mat = new DiagonalMatrix<T>(n);
-                int fill = ReadInt(" Заполнить: 1 – вручную (диагональ), 2 – случайно: ", 1, 2);
+                int fill = ReadInt(" Заполнить: 1 - вручную (диагональ), 2 - случайно: ", 1, 2);
                 if (fill == 1) {
                     for (size_t i = 0; i < n; ++i)
                         new_mat->Set(i, i, ReadValue<T>(" diag[" + std::to_string(i) + "]: "));
@@ -258,7 +258,7 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 offsets.Append(-1); offsets.Append(0); offsets.Append(1);
 
                 BandMatrix<T>* band = new BandMatrix<T>(n, offsets);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
+                int fill = ReadInt(" Заполнить: 1 - вручную, 2 - случайно: ", 1, 2);
                 if (fill == 1) {
                     for (size_t i = 1; i < n; ++i) band->Set(i, i-1, ReadValue<T>(" [" + std::to_string(i) + "][" + std::to_string(i-1) + "]: "));
                     for (size_t i = 0; i < n; ++i) band->Set(i, i, ReadValue<T>(" [" + std::to_string(i) + "][" + std::to_string(i) + "]: "));
@@ -276,7 +276,7 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
                 size_t rows = ReadInt(" Количество строк: ", 1);
                 size_t cols = ReadInt(" Количество столбцов: ", 1);
                 SparseMatrix<T>* sparse = new SparseMatrix<T>(rows, cols);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
+                int fill = ReadInt(" Заполнить: 1 - вручную, 2 - случайно: ", 1, 2);
                 if (fill == 1) {
                     int nz = ReadInt(" Сколько ненулевых элементов ввести? ", 0, rows * cols);
                     for (int k = 0; k < nz; ++k) {
@@ -305,10 +305,10 @@ void MatrixMenu(MutableArraySequence<IMatrix<T>*>& matrices) {
             }
             else if (choice == 6) {
                 size_t n = ReadInt(" Размер: ", 1);
-                int upLow = ReadInt(" 0 – верхняя треугольная, 1 – нижняя треугольная: ", 0, 1);
+                int upLow = ReadInt(" 0 - верхняя треугольная, 1 - нижняя треугольная: ", 0, 1);
                 TriangularType tt = (upLow == 0) ? TriangularType::Upper : TriangularType::Lower;
                 TriangularMatrix<T>* tri = new TriangularMatrix<T>(n, tt);
-                int fill = ReadInt(" Заполнить: 1 – вручную, 2 – случайно: ", 1, 2);
+                int fill = ReadInt(" Заполнить: 1 - вручную, 2 - случайно: ", 1, 2);
                 if (fill == 1) {
                     if (tt == TriangularType::Upper) {
                         for (size_t i = 0; i < n; ++i)
